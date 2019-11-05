@@ -11,23 +11,22 @@ namespace ShComp.Construction.Tree.Test
         static void Main(string[] args)
         {
             var items = new List<Item>();
-            items.Add(new Item { Id = "a", Left = 1, Right = 2 });
-            items.Add(new Item { Id = "b", Left = 3, Right = 14 });
-            items.Add(new Item { Id = "c", Left = 4, Right = 5 });
-            items.Add(new Item { Id = "d", Left = 6, Right = 9 });
-            items.Add(new Item { Id = "e", Left = 7, Right = 8 });
-            items.Add(new Item { Id = "f", Left = 10, Right = 13 });
-            items.Add(new Item { Id = "g", Left = 11, Right = 12 });
-            items.Add(new Item { Id = "h", Left = 15, Right = 16 });
+            items.Add(new Item { Name = "a", Left = 1, Right = 2 });
+            items.Add(new Item { Name = "b", Left = 3, Right = 14 });
+            items.Add(new Item { Name = "c", Left = 4, Right = 5 });
+            items.Add(new Item { Name = "d", Left = 6, Right = 9 });
+            items.Add(new Item { Name = "e", Left = 7, Right = 8 });
+            items.Add(new Item { Name = "f", Left = 10, Right = 13 });
+            items.Add(new Item { Name = "g", Left = 11, Right = 12 });
+            items.Add(new Item { Name = "h", Left = 15, Right = 16 });
 
-            var itemDic = items.ToDictionary(t => t.Id);
             var nodeDic = new Dictionary<string, Node>();
 
             Console.WriteLine("構造化のテスト");
             var roots = TreeBuilder.Rebuild(items, item =>
             {
-                var node = new Node { Id = item.Id, Item = item };
-                nodeDic.Add(node.Id, node);
+                var node = new Node { Item = item };
+                nodeDic.Add(item.Name, node);
                 return node;
             });
 
@@ -45,7 +44,7 @@ namespace ShComp.Construction.Tree.Test
                 item.Right = 0;
             }
 
-            TreeBuilder.Update(itemDic, roots, node => new Item { Id = node.Id });
+            TreeBuilder.Update(roots, node => node.Item);
             foreach (var root in roots)
             {
                 WriteTree(root, "");
@@ -90,7 +89,7 @@ namespace ShComp.Construction.Tree.Test
                 parent.Children.Add(target);
                 target.Parent = parent;
 
-                TreeBuilder.Update(itemDic, roots, node => new Item { Id = node.Id });
+                TreeBuilder.Update(roots, node => node.Item);
                 foreach (var root in roots)
                 {
                     WriteTree(root, "");
@@ -111,19 +110,17 @@ namespace ShComp.Construction.Tree.Test
         }
     }
 
-    class Item : ITreeItem<string>
+    class Item : ITreeItem
     {
-        public string Id { get; set; }
+        public string Name { get; set; }
 
         public int Left { get; set; }
 
         public int Right { get; set; }
     }
 
-    class Node : ITreeNode<string, Node>
+    class Node : ITreeNode<Node>
     {
-        public string Id { get; set; }
-
         public Node Parent { get; set; }
 
         private IList<Node> _children;
@@ -134,7 +131,7 @@ namespace ShComp.Construction.Tree.Test
 
         public override string ToString()
         {
-            return $"Name: {Id}, Left: {Item.Left}, Right: {Item.Right}, Parent: {Parent?.Id}";
+            return $"Name: {Item.Name}, Left: {Item.Left}, Right: {Item.Right}, Parent: {Parent?.Item.Name}";
         }
     }
 }

@@ -6,9 +6,4 @@
 
         int Right { get; set; }
     }
-
-    public interface ITreeItem<TId> : ITreeItem
-    {
-        TId Id { get; }
-    }
 }

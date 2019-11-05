@@ -46,42 +46,30 @@ namespace ShComp.Construction.Tree
         /// <summary>
         /// 木構造を入れ子集合モデルで表現した場合のLeftとRightを更新します。
         /// </summary>
-        public static void Update<TId, TItem, TNode>(Dictionary<TId, TItem> items, IEnumerable<TNode> roots, Func<TNode, TItem> itemCreator)
-            where TItem : ITreeItem<TId>
-            where TNode : ITreeNode<TId, TNode>
+        public static void Update<TItem, TNode>(IEnumerable<TNode> roots, Func<TNode, TItem> itemGetter)
+            where TItem : ITreeItem
+            where TNode : ITreeNode<TNode>
         {
             int i = 0;
             foreach (var root in roots)
             {
-                UpdateSubTree(items, root, itemCreator, ref i);
+                UpdateSubTree(root, itemGetter, ref i);
             }
         }
 
-        private static void UpdateSubTree<TId, TItem, TNode>(Dictionary<TId, TItem> items, TNode node, Func<TNode, TItem> itemCreator, ref int i)
-            where TItem : ITreeItem<TId>
-            where TNode : ITreeNode<TId, TNode>
+        private static void UpdateSubTree<TItem, TNode>(TNode node, Func<TNode, TItem> itemGetter, ref int i)
+            where TItem : ITreeItem
+            where TNode : ITreeNode<TNode>
         {
-            var item = GetOrCreate(items, node.Id, () => itemCreator(node));
+            var item = itemGetter(node);
             item.Left = ++i;
 
             foreach (var child in node.Children)
             {
-                UpdateSubTree(items, child, itemCreator, ref i);
+                UpdateSubTree(child, itemGetter, ref i);
             }
 
             item.Right = ++i;
-        }
-
-        private static TValue GetOrCreate<TKey, TValue>(Dictionary<TKey, TValue> dic, TKey key, Func<TValue> creator)
-        {
-            TValue value;
-            if (!dic.TryGetValue(key, out value))
-            {
-                value = creator();
-                dic.Add(key, value);
-            }
-
-            return value;
         }
     }
 }
