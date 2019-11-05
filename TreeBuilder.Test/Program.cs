@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ShComp.Construction.Tree.Test
 {
@@ -17,12 +18,16 @@ namespace ShComp.Construction.Tree.Test
             nodes.Add(new Node { Name = "g", Left = 11, Right = 12 });
             nodes.Add(new Node { Name = "h", Left = 15, Right = 16 });
 
+            Console.WriteLine("構造化のテスト");
             var roots = TreeBuilder.Rebuild(nodes);
             foreach (var root in roots)
             {
                 WriteTree(root, "");
             }
 
+            Console.WriteLine();
+            Console.WriteLine("更新のテスト");
+            // テストのため、一旦すべてのLeftとRightを初期化する
             foreach (var node in nodes)
             {
                 node.Left = 0;
@@ -30,14 +35,62 @@ namespace ShComp.Construction.Tree.Test
             }
 
             TreeBuilder.Update(roots);
-
             foreach (var root in roots)
             {
                 WriteTree(root, "");
             }
+
+            // 構造を変更してみる
+            Console.WriteLine();
+            Console.WriteLine("ノードの移動テスト");
+            var dic = nodes.ToDictionary(t => t.Name);
+            while (true)
+            {
+                Console.WriteLine("移動させたいノードの名前を入力してください。");
+                Node target;
+                if (!dic.TryGetValue(Console.ReadLine(), out target))
+                {
+                    Console.WriteLine("指定した名前のノードは存在しませんでした。");
+                    continue;
+                }
+
+                Console.WriteLine("移動先のノードの名前を入力してください。");
+                Node parent;
+                if (!dic.TryGetValue(Console.ReadLine(), out parent))
+                {
+                    Console.WriteLine("指定した名前のノードは存在しませんでした。");
+                    continue;
+                }
+
+                if (target.Left < parent.Left && parent.Right < target.Right)
+                {
+                    Console.WriteLine("移動先が移動元の子孫のため、移動できません。");
+                    continue;
+                }
+
+                if (target.Parent == null)
+                {
+                    roots.Remove(target);
+                }
+                else
+                {
+                    target.Parent.Children.Remove(target);
+                }
+
+                parent.Children.Add(target);
+                target.Parent = parent;
+
+                TreeBuilder.Update(roots);
+                foreach (var root in roots)
+                {
+                    WriteTree(root, "");
+                }
+
+                Console.WriteLine();
+            }
         }
 
-        static void WriteTree(Node node, string d)
+        private static void WriteTree(Node node, string d)
         {
             Console.WriteLine($"{d}{node}");
 
