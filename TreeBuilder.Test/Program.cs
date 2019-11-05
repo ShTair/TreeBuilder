@@ -117,7 +117,7 @@ namespace ShComp.Construction.Tree.Test
 
         public override string ToString()
         {
-            return $"{Name} L:{Left} R:{Right} P:{Parent?.Name}";
+            return $"Name: {Name}, Left: {Left}, Right: {Right}, Parent: {Parent?.Name}";
         }
     }
 }
