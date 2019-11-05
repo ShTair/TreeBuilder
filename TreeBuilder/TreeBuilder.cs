@@ -9,7 +9,19 @@ namespace ShComp.Construction.Tree
         /// 入れ子集合モデルにより表現された木構造を再構築します。
         /// <para>nodesはLeft順にソートしてある必要があります。</para>
         /// </summary>
-        /// <param name="nodes">Left順にソートされたすべての要素</param>
+        /// <param name="items">Left順にソートされたすべての要素</param>
+        public static IList<T> Rebuild<T>(IEnumerable<T> items)
+            where T : ITreeItem, ITreeNode<T>
+        {
+            return Rebuild(items, t => t);
+        }
+
+        /// <summary>
+        /// 入れ子集合モデルにより表現された木構造を再構築します。
+        /// <para>nodesはLeft順にソートしてある必要があります。</para>
+        /// </summary>
+        /// <param name="items">Left順にソートされたすべての要素</param>
+        /// <param name="nodeCreator">TItemをもとにTNodeを生成するデリゲート</param>
         public static IList<TNode> Rebuild<TItem, TNode>(IEnumerable<TItem> items, Func<TItem, TNode> nodeCreator)
             where TItem : ITreeItem
             where TNode : ITreeNode<TNode>
@@ -41,6 +53,15 @@ namespace ShComp.Construction.Tree
             }
 
             return parentNode;
+        }
+
+        /// <summary>
+        /// 木構造を入れ子集合モデルで表現した場合のLeftとRightを更新します。
+        /// </summary>
+        public static void Update<T>(IEnumerable<T> roots)
+            where T : ITreeItem, ITreeNode<T>
+        {
+            Update(roots, t => t);
         }
 
         /// <summary>
