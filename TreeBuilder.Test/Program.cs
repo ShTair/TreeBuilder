@@ -6,20 +6,31 @@ namespace ShComp.Construction.Tree.Test
 {
     class Program
     {
+        // Itemはデータベースに記録されることを想定していて、
+        // 記録しないもの（ParentやChildren）をItemには持たないようにしています。
         static void Main(string[] args)
         {
-            var nodes = new List<Node>();
-            nodes.Add(new Node { Name = "a", Left = 1, Right = 2 });
-            nodes.Add(new Node { Name = "b", Left = 3, Right = 14 });
-            nodes.Add(new Node { Name = "c", Left = 4, Right = 5 });
-            nodes.Add(new Node { Name = "d", Left = 6, Right = 9 });
-            nodes.Add(new Node { Name = "e", Left = 7, Right = 8 });
-            nodes.Add(new Node { Name = "f", Left = 10, Right = 13 });
-            nodes.Add(new Node { Name = "g", Left = 11, Right = 12 });
-            nodes.Add(new Node { Name = "h", Left = 15, Right = 16 });
+            var items = new List<Item>();
+            items.Add(new Item { Id = "a", Left = 1, Right = 2 });
+            items.Add(new Item { Id = "b", Left = 3, Right = 14 });
+            items.Add(new Item { Id = "c", Left = 4, Right = 5 });
+            items.Add(new Item { Id = "d", Left = 6, Right = 9 });
+            items.Add(new Item { Id = "e", Left = 7, Right = 8 });
+            items.Add(new Item { Id = "f", Left = 10, Right = 13 });
+            items.Add(new Item { Id = "g", Left = 11, Right = 12 });
+            items.Add(new Item { Id = "h", Left = 15, Right = 16 });
+
+            var itemDic = items.ToDictionary(t => t.Id);
+            var nodeDic = new Dictionary<string, Node>();
 
             Console.WriteLine("構造化のテスト");
-            var roots = TreeBuilder.Rebuild(nodes);
+            var roots = TreeBuilder.Rebuild(items, item =>
+            {
+                var node = new Node { Id = item.Id, Item = item };
+                nodeDic.Add(node.Id, node);
+                return node;
+            });
+
             foreach (var root in roots)
             {
                 WriteTree(root, "");
@@ -28,13 +39,13 @@ namespace ShComp.Construction.Tree.Test
             Console.WriteLine();
             Console.WriteLine("更新のテスト");
             // テストのため、一旦すべてのLeftとRightを初期化する
-            foreach (var node in nodes)
+            foreach (var item in items)
             {
-                node.Left = 0;
-                node.Right = 0;
+                item.Left = 0;
+                item.Right = 0;
             }
 
-            TreeBuilder.Update(roots);
+            TreeBuilder.Update(itemDic, roots, node => new Item { Id = node.Id });
             foreach (var root in roots)
             {
                 WriteTree(root, "");
@@ -43,12 +54,11 @@ namespace ShComp.Construction.Tree.Test
             // 構造を変更してみる
             Console.WriteLine();
             Console.WriteLine("ノードの移動テスト");
-            var dic = nodes.ToDictionary(t => t.Name);
             while (true)
             {
                 Console.WriteLine("移動させたいノードの名前を入力してください。");
                 Node target;
-                if (!dic.TryGetValue(Console.ReadLine(), out target))
+                if (!nodeDic.TryGetValue(Console.ReadLine(), out target))
                 {
                     Console.WriteLine("指定した名前のノードは存在しませんでした。");
                     continue;
@@ -56,13 +66,13 @@ namespace ShComp.Construction.Tree.Test
 
                 Console.WriteLine("移動先のノードの名前を入力してください。");
                 Node parent;
-                if (!dic.TryGetValue(Console.ReadLine(), out parent))
+                if (!nodeDic.TryGetValue(Console.ReadLine(), out parent))
                 {
                     Console.WriteLine("指定した名前のノードは存在しませんでした。");
                     continue;
                 }
 
-                if (target.Left < parent.Left && parent.Right < target.Right)
+                if (target.Item.Left < parent.Item.Left && parent.Item.Right < target.Item.Right)
                 {
                     Console.WriteLine("移動先が移動元の子孫のため、移動できません。");
                     continue;
@@ -80,7 +90,7 @@ namespace ShComp.Construction.Tree.Test
                 parent.Children.Add(target);
                 target.Parent = parent;
 
-                TreeBuilder.Update(roots);
+                TreeBuilder.Update(itemDic, roots, node => new Item { Id = node.Id });
                 foreach (var root in roots)
                 {
                     WriteTree(root, "");
@@ -101,13 +111,18 @@ namespace ShComp.Construction.Tree.Test
         }
     }
 
-    class Node : ITreeNode<Node>
+    class Item : ITreeItem<string>
     {
-        public string Name { get; set; }
+        public string Id { get; set; }
 
         public int Left { get; set; }
 
         public int Right { get; set; }
+    }
+
+    class Node : ITreeNode<string, Node>
+    {
+        public string Id { get; set; }
 
         public Node Parent { get; set; }
 
@@ -115,9 +130,11 @@ namespace ShComp.Construction.Tree.Test
 
         public IList<Node> Children => _children ?? (_children = new List<Node>());
 
+        public Item Item { get; set; }
+
         public override string ToString()
         {
-            return $"Name: {Name}, Left: {Left}, Right: {Right}, Parent: {Parent?.Name}";
+            return $"Name: {Id}, Left: {Item.Left}, Right: {Item.Right}, Parent: {Parent?.Id}";
         }
     }
 }
