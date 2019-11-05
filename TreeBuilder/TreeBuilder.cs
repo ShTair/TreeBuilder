@@ -35,5 +35,29 @@ namespace ShComp.Construction.Tree
 
             return parent;
         }
+
+        /// <summary>
+        /// 木構造を入れ子集合モデルで表現した場合のLeftとRightを更新します。
+        /// </summary>
+        public static void Update<T>(IEnumerable<T> roots) where T : ITreeNode<T>
+        {
+            int i = 0;
+            foreach (var root in roots)
+            {
+                UpdateSubTree(root, ref i);
+            }
+        }
+
+        private static void UpdateSubTree<T>(T node, ref int i) where T : ITreeNode<T>
+        {
+            node.Left = ++i;
+
+            foreach (var child in node.Children)
+            {
+                UpdateSubTree(child, ref i);
+            }
+
+            node.Right = ++i;
+        }
     }
 }
