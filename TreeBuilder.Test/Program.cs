@@ -22,6 +22,19 @@ namespace ShComp.Construction.Tree.Test
             {
                 WriteTree(root, "");
             }
+
+            foreach (var node in nodes)
+            {
+                node.Left = 0;
+                node.Right = 0;
+            }
+
+            TreeBuilder.Update(roots);
+
+            foreach (var root in roots)
+            {
+                WriteTree(root, "");
+            }
         }
 
         static void WriteTree(Node node, string d)
